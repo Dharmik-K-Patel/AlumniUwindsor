@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="home-container">
+        <header>
+            <h1>Welcome to the Obituary Scraper</h1>
+        </header>
+        <section class="project-objective">
+            <h2>Project Objective</h2>
+            <p>
+                To help keep Advancement’s constituent data up to date, this project identifies recently
+                published obituaries of alumni and significant University of Windsor figures by scraping websites
+                for obituaries that feature the key words <strong>“University of Windsor”</strong> or <strong>“UWindsor”</strong>.
+            </p>
+        </section>
+        <div class="home-actions">
+            <a href="/scrape" class="action-button">Scrape Obituaries</a>
+            <button id="stop-scraper" class="action-button">Stop Scraper</button>
+            <a href="/results" class="action-button">View Obituaries</a>
+        </div>
+    </div>
+
+    <!-- Scraping Updates Section -->
+    <div class="updates-container">
+        <h3>Scraping Updates</h3>
+        <ul id="update-list">
+            <!-- Updates will be appended here dynamically -->
+        </ul>
+    </div>
+
+    <script>
+        // Function to fetch updates from the server
+        function fetchUpdates() {
+            $.ajax({
+                url: "/get-updates", // API endpoint
+                method: "GET",
+                success: function(response) {
+                    // Add new update as a list item
+                    const updateText = response.update;
+                    const updateList = $("#update-list");
+                    if (updateList.children(":last").text() !== updateText) {
+                        updateList.append(`<li>${updateText}</li>`);
+                    }
+                },
+                error: function() {
+                    const updateList = $("#update-list");
+                    if (updateList.children(":last").text() !== "Failed to fetch updates.") {
+                        updateList.append("<li>Failed to fetch updates.</li>");
+                    }
+                }
+            });
+        }
+
+        // Function to handle STOP SCRAPER button
+        $("#stop-scraper").click(function() {
+            $.post("/stop-scraper", function(response) {
+                alert(response.status);
+            }).fail(function() {
+                alert("Failed to stop the scraper.");
+            });
+        });
+
+        // Fetch updates every 5 seconds
+        setInterval(fetchUpdates, 5000);
+
+        // Fetch updates immediately on page load
+        fetchUpdates();
+    </script>
+</body>
+</html>
